@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ photo.name }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <img src="{{ photo.photo.url }}" class="card-img-top" alt="{{ photo.name }}"
+                 style="max-height: 520px; object-fit: contain; background: #222;">
+            <div class="card-body">
+                <h3 class="card-title">{{ photo.name }}</h3>
+                <p class="text-muted mb-1">
+                    <i class="bi bi-calendar3"></i>
+                    {{ photo.uploaded_at|date:"Y-m-d H:i" }}
+                </p>
+                <p class="text-muted">
+                    <i class="bi bi-person"></i> {{ photo.owner.username }}
+                </p>
+                <div class="d-flex gap-2 mt-3">
+                    <a href="{% url 'photo_list' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Back to List
+                    </a>
+                    {% if user.is_authenticated and user.is_staff or user == photo.owner %}
+                        <a href="{% url 'photo_delete' photo.pk %}" class="btn btn-outline-danger">
+                            <i class="bi bi-trash"></i> Delete
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
