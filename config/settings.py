@@ -10,7 +10,11 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+import os
 from pathlib import Path
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,7 +29,7 @@ SECRET_KEY = 'django-insecure-4*nhk5n8mz(jw$qj%r0!(=#te118d*z163y9odg@3+(1%e^3qb
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -55,7 +59,7 @@ ROOT_URLCONF = 'config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -128,3 +132,35 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+if os.getenv('USE_S3', 'False') == 'True':
+    INSTALLED_APPS += ['storages']
+
+    STORAGES = {
+        'default': {
+            'BACKEND': 'storages.backends.s3boto3.S3Boto3Storage',
+        },
+        'staticfiles': {
+            'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage',
+        },
+    }
+
+    AWS_STORAGE_BUCKET_NAME = os.getenv('S3_BUCKET_NAME')
+    AWS_S3_REGION_NAME      = os.getenv('S3_REGION_NAME', 'us-east-1')
+    AWS_ACCESS_KEY_ID       = os.getenv('S3_ACCESS_KEY_ID')
+    AWS_SECRET_ACCESS_KEY   = os.getenv('S3_SECRET_ACCESS_KEY')
+    AWS_S3_ENDPOINT_URL     = os.getenv('S3_ENDPOINT_URL')
+    AWS_DEFAULT_ACL         = None
+    AWS_S3_FILE_OVERWRITE   = False 
+
+LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = '/'
+
+from django.contrib.messages import constants as message_constants
+MESSAGE_TAGS = {
+    message_constants.DEBUG: 'secondary',
+    message_constants.INFO: 'info',
+    message_constants.SUCCESS: 'success',
+    message_constants.WARNING: 'warning',
+    message_constants.ERROR: 'danger',
+}
