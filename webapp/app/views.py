@@ -3,6 +3,9 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib import messages
+from django.http import JsonResponse
+from django.db import connections
+from django.db.utils import OperationalError
 from django.urls import reverse_lazy
 
 from .models import Photo
@@ -82,3 +85,15 @@ def register_view(request):
     else:
         form = RegisterForm()
     return render(request, 'app/register.html', {'form': form})
+
+
+def health_ready(request):
+    try:
+        with connections['default'].cursor() as cursor:
+            cursor.execute('SELECT 1')
+            cursor.fetchone()
+        return JsonResponse({'status': 'ok'}, status=200)
+    except OperationalError:
+        return JsonResponse({'status': 'error', 'detail': 'database unavailable'}, status=503)
+    except Exception:
+        return JsonResponse({'status': 'error', 'detail': 'readiness check failed'}, status=503)
