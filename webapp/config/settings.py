@@ -16,6 +16,10 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+
+def env_bool(name, default=False):
+    return os.getenv(name, str(default)).lower() in ('1', 'true', 'yes', 'on')
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -27,9 +31,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-4*nhk5n8mz(jw$qj%r0!(=#te118d*z163y9odg@3+(1%e^3qb'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env_bool('DEBUG', False)
 
 ALLOWED_HOSTS = ['*']
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.apps.okd.fured.cloud.bme.hu',
+]
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
 
 
 # Application definition
