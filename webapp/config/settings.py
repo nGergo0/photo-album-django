@@ -154,12 +154,16 @@ STATICFILES_DIRS = [
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MEDIA_URL = '/media/'
-default_media_root = Path('/tmp/django-media')
+default_media_root = Path('/data/media')
 MEDIA_ROOT = Path(os.getenv('MEDIA_ROOT', str(default_media_root)))
 
 # In OpenShift, random non-root UID can always write to /tmp.
 if os.getenv('USE_S3', 'False') != 'True':
-    MEDIA_ROOT.mkdir(parents=True, exist_ok=True)
+    try:
+        MEDIA_ROOT.mkdir(parents=True, exist_ok=True)
+    except PermissionError:
+        MEDIA_ROOT = Path('/tmp/django-media')
+        MEDIA_ROOT.mkdir(parents=True, exist_ok=True)
 
 if os.getenv('USE_S3', 'False') == 'True':
     INSTALLED_APPS += ['storages']
