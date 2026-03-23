@@ -52,6 +52,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'rest_framework.authtoken',
+    'drf_spectacular',
     'app'
 ]
 
@@ -195,4 +198,18 @@ MESSAGE_TAGS = {
     message_constants.SUCCESS: 'success',
     message_constants.WARNING: 'warning',
     message_constants.ERROR: 'danger',
+}
+
+REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Photo Album API',
+    'DESCRIPTION': 'REST API for the Django photo album app.',
+    'VERSION': '1.0.0',
 }
