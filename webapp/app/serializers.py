@@ -13,7 +13,7 @@ class PhotoSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'photo', 'photo_url', 'uploaded_at', 'owner']
         read_only_fields = ['id', 'uploaded_at', 'owner', 'photo_url']
 
-    def get_photo_url(self, obj):
+    def get_photo_url(self, obj) -> str | None:
         request = self.context.get('request')
         if not obj.photo:
             return None
@@ -43,3 +43,26 @@ class RegisterSerializer(serializers.ModelSerializer):
         user.set_password(password)
         user.save()
         return user
+
+
+class LoginSerializer(serializers.Serializer):
+    username = serializers.CharField()
+    password = serializers.CharField(write_only=True)
+
+
+class MessageSerializer(serializers.Serializer):
+    detail = serializers.CharField()
+
+
+class LoginResponseSerializer(serializers.Serializer):
+    detail = serializers.CharField()
+    token = serializers.CharField()
+
+
+class TokenResponseSerializer(serializers.Serializer):
+    token = serializers.CharField()
+
+
+class HealthResponseSerializer(serializers.Serializer):
+    status = serializers.CharField()
+    detail = serializers.CharField(required=False)

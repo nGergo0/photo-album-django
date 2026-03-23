@@ -1,13 +1,22 @@
 from django.contrib.auth import authenticate, login, logout
 from django.db import connections
 from django.db.utils import OperationalError
+from drf_spectacular.utils import extend_schema
 from rest_framework.authtoken.models import Token
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import Photo
-from .serializers import PhotoSerializer, RegisterSerializer
+from .serializers import (
+    HealthResponseSerializer,
+    LoginResponseSerializer,
+    LoginSerializer,
+    MessageSerializer,
+    PhotoSerializer,
+    RegisterSerializer,
+    TokenResponseSerializer,
+)
 
 
 class PhotoListCreateAPIView(generics.ListCreateAPIView):
@@ -49,6 +58,7 @@ class PhotoDetailAPIView(generics.RetrieveDestroyAPIView):
 class RegisterAPIView(APIView):
     permission_classes = [permissions.AllowAny]
 
+    @extend_schema(request=RegisterSerializer, responses={201: MessageSerializer})
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -60,6 +70,7 @@ class RegisterAPIView(APIView):
 class LoginAPIView(APIView):
     permission_classes = [permissions.AllowAny]
 
+    @extend_schema(request=LoginSerializer, responses={200: LoginResponseSerializer, 400: MessageSerializer})
     def post(self, request):
         username = request.data.get('username')
         password = request.data.get('password')
@@ -74,6 +85,7 @@ class LoginAPIView(APIView):
 class TokenLoginAPIView(APIView):
     permission_classes = [permissions.AllowAny]
 
+    @extend_schema(request=LoginSerializer, responses={200: TokenResponseSerializer, 400: MessageSerializer})
     def post(self, request):
         username = request.data.get('username')
         password = request.data.get('password')
@@ -87,6 +99,7 @@ class TokenLoginAPIView(APIView):
 class LogoutAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
+    @extend_schema(request=None, responses={200: MessageSerializer})
     def post(self, request):
         if isinstance(request.auth, Token):
             request.auth.delete()
@@ -97,6 +110,7 @@ class LogoutAPIView(APIView):
 class HealthReadyAPIView(APIView):
     permission_classes = [permissions.AllowAny]
 
+    @extend_schema(responses={200: HealthResponseSerializer, 503: HealthResponseSerializer})
     def get(self, request):
         try:
             with connections['default'].cursor() as cursor:
