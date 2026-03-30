@@ -38,6 +38,7 @@ class PhotoListCreateAPIView(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
 
+@method_decorator(csrf_exempt, name='dispatch')
 class PhotoDetailAPIView(generics.RetrieveDestroyAPIView):
     queryset = Photo.objects.all()
     serializer_class = PhotoSerializer
@@ -95,6 +96,7 @@ class TokenLoginAPIView(APIView):
         token, _ = Token.objects.get_or_create(user=user)
         return Response({'token': token.key}, status=status.HTTP_200_OK)
 
+@method_decorator(csrf_exempt, name='dispatch')
 class LogoutAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
