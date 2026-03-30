@@ -19,7 +19,6 @@ from .serializers import (
     TokenResponseSerializer,
 )
 
-@csrf_exempt
 class PhotoListCreateAPIView(generics.ListCreateAPIView):
     serializer_class = PhotoSerializer
 
@@ -37,7 +36,6 @@ class PhotoListCreateAPIView(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
 
-@csrf_exempt
 class PhotoDetailAPIView(generics.RetrieveDestroyAPIView):
     queryset = Photo.objects.all()
     serializer_class = PhotoSerializer
@@ -55,7 +53,6 @@ class PhotoDetailAPIView(generics.RetrieveDestroyAPIView):
         photo.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-@csrf_exempt
 class RegisterAPIView(APIView):
     permission_classes = [permissions.AllowAny]
 
@@ -67,7 +64,6 @@ class RegisterAPIView(APIView):
         login(request, user)
         return Response({'detail': f'Welcome, {user.username}!'}, status=status.HTTP_201_CREATED)
 
-@csrf_exempt
 class LoginAPIView(APIView):
     permission_classes = [permissions.AllowAny]
 
@@ -82,7 +78,6 @@ class LoginAPIView(APIView):
         token, _ = Token.objects.get_or_create(user=user)
         return Response({'detail': f'Welcome back, {user.username}!', 'token': token.key}, status=status.HTTP_200_OK)
 
-@csrf_exempt
 class TokenLoginAPIView(APIView):
     permission_classes = [permissions.AllowAny]
 
@@ -96,7 +91,6 @@ class TokenLoginAPIView(APIView):
         token, _ = Token.objects.get_or_create(user=user)
         return Response({'token': token.key}, status=status.HTTP_200_OK)
 
-@csrf_exempt
 class LogoutAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -107,7 +101,6 @@ class LogoutAPIView(APIView):
         logout(request)
         return Response({'detail': 'Logged out.'}, status=status.HTTP_200_OK)
 
-@csrf_exempt
 class HealthReadyAPIView(APIView):
     permission_classes = [permissions.AllowAny]
 
