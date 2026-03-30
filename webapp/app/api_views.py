@@ -1,6 +1,7 @@
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, logout
 from django.db import connections
 from django.db.utils import OperationalError
+from django.utils.decorators import method_decorator
 from drf_spectacular.utils import extend_schema
 from rest_framework.authtoken.models import Token
 from rest_framework import generics, permissions, status
@@ -19,6 +20,7 @@ from .serializers import (
     TokenResponseSerializer,
 )
 
+@method_decorator(csrf_exempt, name='dispatch')
 class PhotoListCreateAPIView(generics.ListCreateAPIView):
     serializer_class = PhotoSerializer
 
@@ -53,6 +55,8 @@ class PhotoDetailAPIView(generics.RetrieveDestroyAPIView):
         photo.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+
+@method_decorator(csrf_exempt, name='dispatch')
 class RegisterAPIView(APIView):
     permission_classes = [permissions.AllowAny]
 
@@ -61,9 +65,9 @@ class RegisterAPIView(APIView):
         serializer = RegisterSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
-        login(request, user)
         return Response({'detail': f'Welcome, {user.username}!'}, status=status.HTTP_201_CREATED)
 
+@method_decorator(csrf_exempt, name='dispatch')
 class LoginAPIView(APIView):
     permission_classes = [permissions.AllowAny]
 
@@ -74,10 +78,10 @@ class LoginAPIView(APIView):
         user = authenticate(request, username=username, password=password)
         if user is None:
             return Response({'detail': 'Invalid credentials.'}, status=status.HTTP_400_BAD_REQUEST)
-        login(request, user)
         token, _ = Token.objects.get_or_create(user=user)
         return Response({'detail': f'Welcome back, {user.username}!', 'token': token.key}, status=status.HTTP_200_OK)
 
+@method_decorator(csrf_exempt, name='dispatch')
 class TokenLoginAPIView(APIView):
     permission_classes = [permissions.AllowAny]
 

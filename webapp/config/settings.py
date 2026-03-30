@@ -203,7 +203,6 @@ MESSAGE_TAGS = {
 REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.TokenAuthentication',
     ],
 }
@@ -212,4 +211,7 @@ SPECTACULAR_SETTINGS = {
     'TITLE': 'Photo Album API',
     'DESCRIPTION': 'REST API for the Django photo album app.',
     'VERSION': '1.0.0',
+    'AUTHENTICATION_WHITELIST': [
+        'rest_framework.authentication.TokenAuthentication',
+    ],
 }
