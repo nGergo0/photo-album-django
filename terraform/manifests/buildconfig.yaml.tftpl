@@ -1,0 +1,33 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: photo-album-django
+  namespace: ${namespace}
+spec:
+  output:
+    to:
+      kind: ImageStreamTag
+      name: photo-album-django:latest
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: Dockerfile
+  source:
+    type: Git
+    git:
+      uri: ${github_repo_url}
+      ref: ${github_branch}
+    contextDir: /
+  triggers:
+    - type: Generic
+      generic:
+        secretReference:
+          name: photo-album-django-generic-webhook-secret
+    - type: GitHub
+      github:
+        secretReference:
+          name: photo-album-django-github-webhook-secret
+    - type: ConfigChange
+  runPolicy: Serial
+  successfulBuildsHistoryLimit: 2
+  failedBuildsHistoryLimit: 2

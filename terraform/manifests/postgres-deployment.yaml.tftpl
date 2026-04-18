@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: db-postgres
+  namespace: ${namespace}
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      name: db-postgres
+  template:
+    metadata:
+      labels:
+        name: db-postgres
+    spec:
+      containers:
+        - name: postgresql
+          image: image-registry.openshift-image-registry.svc:5000/openshift/postgresql:16-el10
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: POSTGRESQL_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: db-postgres
+                  key: database-name
+            - name: POSTGRESQL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: db-postgres
+                  key: database-user
+            - name: POSTGRESQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-postgres
+                  key: database-password
+          ports:
+            - containerPort: 5432
+              protocol: TCP
+          resources:
+            limits:
+              memory: 512Mi
+          volumeMounts:
+            - mountPath: /var/lib/pgsql/data
+              name: db-postgres-data
+          readinessProbe:
+            exec:
+              command:
+                - /usr/libexec/check-container
+            initialDelaySeconds: 5
+            timeoutSeconds: 1
+            periodSeconds: 10
+            failureThreshold: 3
+          livenessProbe:
+            exec:
+              command:
+                - /usr/libexec/check-container
+                - --live
+            initialDelaySeconds: 120
+            timeoutSeconds: 10
+            periodSeconds: 10
+            failureThreshold: 3
+      volumes:
+        - name: db-postgres-data
+          persistentVolumeClaim:
+            claimName: db-postgres
