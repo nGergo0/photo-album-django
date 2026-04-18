@@ -1,0 +1,100 @@
+name: Deploy with Terraform to OpenShift
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'terraform/**'
+      - 'Dockerfile'
+      - 'webapp/**'
+      - '.github/workflows/deploy-terraform.yml'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      TF_VERSION: 1.6.0
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Create kubeconfig from secret
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBECONFIG_CONTENT }}" | base64 -d > ~/.kube/config
+          chmod 600 ~/.kube/config
+
+      - name: Install OpenShift CLI
+        run: |
+          curl -L -o oc.tar.gz https://mirror.openshift.com/pub/openshift-v4/clients/ocp/stable/openshift-client-linux.tar.gz
+          tar -xzf oc.tar.gz oc kubectl
+          sudo mv oc kubectl /usr/local/bin/
+          oc version --client
+
+      - name: Verify OpenShift connection
+        run: |
+          kubectl cluster-info
+          oc whoami
+
+      - name: Terraform Format Check
+        run: |
+          cd terraform
+          terraform fmt -check -recursive
+
+      - name: Terraform Init
+        run: |
+          cd terraform
+          terraform init -backend=false
+
+      - name: Terraform Plan
+        run: |
+          cd terraform
+          terraform plan \
+            -var="db_password=${{ secrets.DB_PASSWORD }}" \
+            -var="github_webhook_secret=${{ secrets.WEBHOOK_SECRET_GITHUB }}" \
+            -var="generic_webhook_secret=${{ secrets.WEBHOOK_SECRET_GENERIC }}" \
+            -out=tfplan
+
+      - name: Terraform Apply
+        run: |
+          cd terraform
+          terraform apply -auto-approve tfplan
+        env:
+          KUBECONFIG: ~/.kube/config
+
+      - name: Verify deployment
+        run: |
+          # Wait for deployment to be ready
+          oc -n photo-album-pibk75 rollout status deployment/photo-album-django --timeout=5m || true
+          oc -n photo-album-pibk75 rollout status deployment/db-postgres --timeout=5m || true
+          
+          echo "=== Pod Status ==="
+          oc -n photo-album-pibk75 get pods
+          
+          echo "=== Deployment Status ==="
+          oc -n photo-album-pibk75 get deployment
+
+      - name: Get Route URL
+        run: |
+          echo "=== Application Route ==="
+          oc -n photo-album-pibk75 get route photo-album -o jsonpath='{.spec.host}' || echo "Route not yet available"
+
+      - name: Comment on PR (if applicable)
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: 'Terraform deployment workflow completed. Check OpenShift cluster for updated resources.'
+            })
