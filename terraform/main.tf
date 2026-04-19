@@ -44,8 +44,9 @@ resource "kubectl_manifest" "db_service" {
 }
 
 resource "kubectl_manifest" "db_deployment" {
-  depends_on = [kubectl_manifest.db_secret, kubectl_manifest.db_pvc, kubectl_manifest.db_service]
-  yaml_body  = templatefile("${path.module}/manifests/postgres-deployment.yaml.tftpl", local.common_vars)
+  depends_on       = [kubectl_manifest.db_secret, kubectl_manifest.db_pvc, kubectl_manifest.db_service]
+  wait_for_rollout = false
+  yaml_body        = templatefile("${path.module}/manifests/postgres-deployment.yaml.tftpl", local.common_vars)
 }
 
 resource "kubectl_manifest" "imagestream" {
@@ -74,7 +75,8 @@ resource "kubectl_manifest" "web_deployment" {
     kubectl_manifest.buildconfig
   ]
 
-  yaml_body = templatefile("${path.module}/manifests/web-deployment.yaml.tftpl", local.common_vars)
+  wait_for_rollout = false
+  yaml_body        = templatefile("${path.module}/manifests/web-deployment.yaml.tftpl", local.common_vars)
 }
 
 resource "kubectl_manifest" "hpa" {
