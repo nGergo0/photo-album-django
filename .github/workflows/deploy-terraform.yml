@@ -61,6 +61,7 @@ jobs:
         run: |
           cd terraform
           terraform plan \
+            -var="kubeconfig_path=${KUBECONFIG}" \
             -var="db_password=${{ secrets.DB_PASSWORD }}" \
             -var="github_webhook_secret=${{ secrets.WEBHOOK_SECRET_GITHUB }}" \
             -var="generic_webhook_secret=${{ secrets.WEBHOOK_SECRET_GENERIC }}" \
