@@ -59,6 +59,22 @@ jobs:
             echo "Project missing, will be created by Terraform: $NAMESPACE"
           fi
 
+      - name: Detect existing DB identity
+        id: db_identity
+        run: |
+          if oc -n "$NAMESPACE" get secret db-postgres >/dev/null 2>&1; then
+            existing_db_user=$(oc -n "$NAMESPACE" get secret db-postgres -o jsonpath='{.data.database-user}' | base64 -d)
+            existing_db_name=$(oc -n "$NAMESPACE" get secret db-postgres -o jsonpath='{.data.database-name}' | base64 -d)
+
+            echo "Using existing DB identity from secret db-postgres"
+            echo "db_user=$existing_db_user" >> "$GITHUB_OUTPUT"
+            echo "db_name=$existing_db_name" >> "$GITHUB_OUTPUT"
+          else
+            echo "No existing db-postgres secret found, using Terraform defaults"
+            echo "db_user=photo-album-pibk75" >> "$GITHUB_OUTPUT"
+            echo "db_name=photo-album-pibk75" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Terraform Format Check
         run: |
           cd terraform
@@ -76,6 +92,8 @@ jobs:
             -var="kubeconfig_path=${KUBECONFIG}" \
             -var="namespace=${NAMESPACE}" \
             -var="create_project=${{ steps.project_check.outputs.create_project }}" \
+            -var="db_user=${{ steps.db_identity.outputs.db_user }}" \
+            -var="db_name=${{ steps.db_identity.outputs.db_name }}" \
             -var="db_password=${{ secrets.DB_PASSWORD }}" \
             -var="github_webhook_secret=${{ secrets.WEBHOOK_SECRET_GITHUB }}" \
             -var="generic_webhook_secret=${{ secrets.WEBHOOK_SECRET_GENERIC }}" \
