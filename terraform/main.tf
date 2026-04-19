@@ -1,14 +1,14 @@
 locals {
   common_vars = {
-    namespace             = var.namespace
-    project_display_name  = var.project_display_name
-    project_description   = var.project_description
-    db_name               = var.db_name
-    db_user               = var.db_user
-    db_password           = var.db_password
-    github_repo_url       = var.github_repo_url
-    github_branch         = var.github_branch
-    github_webhook_secret = var.github_webhook_secret
+    namespace              = var.namespace
+    project_display_name   = var.project_display_name
+    project_description    = var.project_description
+    db_name                = var.db_name
+    db_user                = var.db_user
+    db_password            = var.db_password
+    github_repo_url        = var.github_repo_url
+    github_branch          = var.github_branch
+    github_webhook_secret  = var.github_webhook_secret
     generic_webhook_secret = var.generic_webhook_secret
   }
 }
