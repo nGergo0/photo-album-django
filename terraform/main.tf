@@ -19,7 +19,7 @@ resource "kubectl_manifest" "project" {
 }
 
 resource "kubectl_manifest" "db_secret" {
-  yaml_body  = templatefile("${path.module}/manifests/postgres-secret.yaml.tftpl", local.common_vars)
+  yaml_body = templatefile("${path.module}/manifests/postgres-secret.yaml.tftpl", local.common_vars)
 }
 
 resource "kubectl_manifest" "webhook_secrets" {
@@ -28,19 +28,19 @@ resource "kubectl_manifest" "webhook_secrets" {
     generic = templatefile("${path.module}/manifests/webhook-secret-generic.yaml.tftpl", local.common_vars)
   }
 
-  yaml_body  = each.value
+  yaml_body = each.value
 }
 
 resource "kubectl_manifest" "db_pvc" {
-  yaml_body  = templatefile("${path.module}/manifests/postgres-pvc.yaml.tftpl", local.common_vars)
+  yaml_body = templatefile("${path.module}/manifests/postgres-pvc.yaml.tftpl", local.common_vars)
 }
 
 resource "kubectl_manifest" "media_pvc" {
-  yaml_body  = templatefile("${path.module}/manifests/media-pvc.yaml.tftpl", local.common_vars)
+  yaml_body = templatefile("${path.module}/manifests/media-pvc.yaml.tftpl", local.common_vars)
 }
 
 resource "kubectl_manifest" "db_service" {
-  yaml_body  = templatefile("${path.module}/manifests/postgres-service.yaml.tftpl", local.common_vars)
+  yaml_body = templatefile("${path.module}/manifests/postgres-service.yaml.tftpl", local.common_vars)
 }
 
 resource "kubectl_manifest" "db_deployment" {
@@ -49,7 +49,7 @@ resource "kubectl_manifest" "db_deployment" {
 }
 
 resource "kubectl_manifest" "imagestream" {
-  yaml_body  = templatefile("${path.module}/manifests/imagestream.yaml.tftpl", local.common_vars)
+  yaml_body = templatefile("${path.module}/manifests/imagestream.yaml.tftpl", local.common_vars)
 }
 
 resource "kubectl_manifest" "buildconfig" {
@@ -58,7 +58,7 @@ resource "kubectl_manifest" "buildconfig" {
 }
 
 resource "kubectl_manifest" "web_service" {
-  yaml_body  = templatefile("${path.module}/manifests/web-service.yaml.tftpl", local.common_vars)
+  yaml_body = templatefile("${path.module}/manifests/web-service.yaml.tftpl", local.common_vars)
 }
 
 resource "kubectl_manifest" "web_route" {
