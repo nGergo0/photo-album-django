@@ -17,6 +17,7 @@ jobs:
     env:
       TF_VERSION: 1.6.0
       KUBECONFIG: ${{ github.workspace }}/.kube/config
+      NAMESPACE: photo-album-pibk75
 
     steps:
       - name: Checkout repository
@@ -44,8 +45,19 @@ jobs:
       - name: Verify OpenShift connection
         run: |
           oc whoami
-          oc project photo-album-pibk75
-          oc -n photo-album-pibk75 get pods
+          oc project "$NAMESPACE"
+          oc -n "$NAMESPACE" get pods
+
+      - name: Detect project existence
+        id: project_check
+        run: |
+          if oc get project "$NAMESPACE" >/dev/null 2>&1; then
+            echo "create_project=false" >> "$GITHUB_OUTPUT"
+            echo "Project exists: $NAMESPACE"
+          else
+            echo "create_project=true" >> "$GITHUB_OUTPUT"
+            echo "Project missing, will be created by Terraform: $NAMESPACE"
+          fi
 
       - name: Terraform Format Check
         run: |
@@ -62,6 +74,8 @@ jobs:
           cd terraform
           terraform plan \
             -var="kubeconfig_path=${KUBECONFIG}" \
+            -var="namespace=${NAMESPACE}" \
+            -var="create_project=${{ steps.project_check.outputs.create_project }}" \
             -var="db_password=${{ secrets.DB_PASSWORD }}" \
             -var="github_webhook_secret=${{ secrets.WEBHOOK_SECRET_GITHUB }}" \
             -var="generic_webhook_secret=${{ secrets.WEBHOOK_SECRET_GENERIC }}" \
@@ -75,19 +89,19 @@ jobs:
       - name: Verify deployment
         run: |
           # Wait for deployment to be ready
-          oc -n photo-album-pibk75 rollout status deployment/photo-album-django --timeout=5m || true
-          oc -n photo-album-pibk75 rollout status deployment/db-postgres --timeout=5m || true
+          oc -n "$NAMESPACE" rollout status deployment/photo-album-django --timeout=5m || true
+          oc -n "$NAMESPACE" rollout status deployment/db-postgres --timeout=5m || true
           
           echo "=== Pod Status ==="
-          oc -n photo-album-pibk75 get pods
+          oc -n "$NAMESPACE" get pods
           
           echo "=== Deployment Status ==="
-          oc -n photo-album-pibk75 get deployment
+          oc -n "$NAMESPACE" get deployment
 
       - name: Get Route URL
         run: |
           echo "=== Application Route ==="
-          oc -n photo-album-pibk75 get route photo-album -o jsonpath='{.spec.host}' || echo "Route not yet available"
+          oc -n "$NAMESPACE" get route photo-album -o jsonpath='{.spec.host}' || echo "Route not yet available"
 
       - name: Comment on PR (if applicable)
         if: github.event_name == 'pull_request'

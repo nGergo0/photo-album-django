@@ -14,11 +14,11 @@ locals {
 }
 
 resource "kubectl_manifest" "project" {
+  count     = var.create_project ? 1 : 0
   yaml_body = templatefile("${path.module}/manifests/project.yaml.tftpl", local.common_vars)
 }
 
 resource "kubectl_manifest" "db_secret" {
-  depends_on = [kubectl_manifest.project]
   yaml_body  = templatefile("${path.module}/manifests/postgres-secret.yaml.tftpl", local.common_vars)
 }
 
@@ -28,22 +28,18 @@ resource "kubectl_manifest" "webhook_secrets" {
     generic = templatefile("${path.module}/manifests/webhook-secret-generic.yaml.tftpl", local.common_vars)
   }
 
-  depends_on = [kubectl_manifest.project]
   yaml_body  = each.value
 }
 
 resource "kubectl_manifest" "db_pvc" {
-  depends_on = [kubectl_manifest.project]
   yaml_body  = templatefile("${path.module}/manifests/postgres-pvc.yaml.tftpl", local.common_vars)
 }
 
 resource "kubectl_manifest" "media_pvc" {
-  depends_on = [kubectl_manifest.project]
   yaml_body  = templatefile("${path.module}/manifests/media-pvc.yaml.tftpl", local.common_vars)
 }
 
 resource "kubectl_manifest" "db_service" {
-  depends_on = [kubectl_manifest.project]
   yaml_body  = templatefile("${path.module}/manifests/postgres-service.yaml.tftpl", local.common_vars)
 }
 
@@ -53,7 +49,6 @@ resource "kubectl_manifest" "db_deployment" {
 }
 
 resource "kubectl_manifest" "imagestream" {
-  depends_on = [kubectl_manifest.project]
   yaml_body  = templatefile("${path.module}/manifests/imagestream.yaml.tftpl", local.common_vars)
 }
 
@@ -63,7 +58,6 @@ resource "kubectl_manifest" "buildconfig" {
 }
 
 resource "kubectl_manifest" "web_service" {
-  depends_on = [kubectl_manifest.project]
   yaml_body  = templatefile("${path.module}/manifests/web-service.yaml.tftpl", local.common_vars)
 }
 

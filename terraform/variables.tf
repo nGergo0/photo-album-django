@@ -16,6 +16,12 @@ variable "project_description" {
   default     = "Photo Album Django application"
 }
 
+variable "create_project" {
+  description = "Create/OpenShift Project via Terraform when true. Keep false if project already exists."
+  type        = bool
+  default     = false
+}
+
 variable "kubeconfig_path" {
   description = "Path to kubeconfig used by Terraform."
   type        = string
