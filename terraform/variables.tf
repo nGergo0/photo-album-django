@@ -31,13 +31,13 @@ variable "kubeconfig_path" {
 variable "db_name" {
   description = "PostgreSQL database name."
   type        = string
-  default     = "photo_album"
+  default     = "photo-album-pibk75"
 }
 
 variable "db_user" {
   description = "PostgreSQL username."
   type        = string
-  default     = "photo-album"
+  default     = "photo-album-pibk75"
 }
 
 variable "db_password" {
