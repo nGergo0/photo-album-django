@@ -16,6 +16,7 @@ jobs:
 
     env:
       TF_VERSION: 1.6.0
+      KUBECONFIG: ${{ runner.temp }}/kubeconfig
 
     steps:
       - name: Checkout repository
@@ -28,9 +29,10 @@ jobs:
 
       - name: Create kubeconfig from secret
         run: |
-          mkdir -p ~/.kube
-          echo "${{ secrets.KUBECONFIG_CONTENT }}" | base64 -d > ~/.kube/config
-          chmod 600 ~/.kube/config
+          mkdir -p "$(dirname "$KUBECONFIG")"
+          echo "${{ secrets.KUBECONFIG_CONTENT }}" | base64 -d > "$KUBECONFIG"
+          chmod 600 "$KUBECONFIG"
+          test -s "$KUBECONFIG"
 
       - name: Install OpenShift CLI
         run: |
@@ -40,8 +42,6 @@ jobs:
           oc version --client
 
       - name: Verify OpenShift connection
-        env:
-          KUBECONFIG: ~/.kube/config
         run: |
           oc whoami
           oc project photo-album-pibk75
@@ -70,8 +70,6 @@ jobs:
         run: |
           cd terraform
           terraform apply -auto-approve tfplan
-        env:
-          KUBECONFIG: ~/.kube/config
 
       - name: Verify deployment
         run: |
