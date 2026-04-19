@@ -40,9 +40,12 @@ jobs:
           oc version --client
 
       - name: Verify OpenShift connection
+        env:
+          KUBECONFIG: ~/.kube/config
         run: |
-          kubectl cluster-info
           oc whoami
+          oc project photo-album-pibk75
+          oc -n photo-album-pibk75 get pods
 
       - name: Terraform Format Check
         run: |
