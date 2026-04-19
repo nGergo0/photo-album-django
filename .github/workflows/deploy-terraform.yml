@@ -16,7 +16,7 @@ jobs:
 
     env:
       TF_VERSION: 1.6.0
-      KUBECONFIG: ${{ runner.temp }}/kubeconfig
+      KUBECONFIG: ${{ github.workspace }}/.kube/config
 
     steps:
       - name: Checkout repository
@@ -29,7 +29,7 @@ jobs:
 
       - name: Create kubeconfig from secret
         run: |
-          mkdir -p "$(dirname "$KUBECONFIG")"
+          mkdir -p "${{ github.workspace }}/.kube"
           echo "${{ secrets.KUBECONFIG_CONTENT }}" | base64 -d > "$KUBECONFIG"
           chmod 600 "$KUBECONFIG"
           test -s "$KUBECONFIG"
