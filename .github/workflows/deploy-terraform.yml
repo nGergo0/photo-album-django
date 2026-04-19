@@ -88,15 +88,40 @@ jobs:
 
       - name: Verify deployment
         run: |
-          # Wait for deployment to be ready
-          oc -n "$NAMESPACE" rollout status deployment/photo-album-django --timeout=5m || true
-          oc -n "$NAMESPACE" rollout status deployment/db-postgres --timeout=5m || true
-          
+          set +e
+          app_status=0
+          db_status=0
+
+          echo "=== Rollout: photo-album-django ==="
+          oc -n "$NAMESPACE" rollout status deployment/photo-album-django --timeout=5m
+          app_status=$?
+
+          echo "=== Rollout: db-postgres ==="
+          oc -n "$NAMESPACE" rollout status deployment/db-postgres --timeout=5m
+          db_status=$?
+
           echo "=== Pod Status ==="
-          oc -n "$NAMESPACE" get pods
-          
+          oc -n "$NAMESPACE" get pods -o wide
+
           echo "=== Deployment Status ==="
           oc -n "$NAMESPACE" get deployment
+
+          if [ "$app_status" -ne 0 ] || [ "$db_status" -ne 0 ]; then
+            echo "=== Recent Events ==="
+            oc -n "$NAMESPACE" get events --sort-by=.metadata.creationTimestamp | tail -n 50
+
+            echo "=== Failing Pod Logs (last 200 lines) ==="
+            failing_pods=$(oc -n "$NAMESPACE" get pods --no-headers | awk '$3 ~ /CrashLoopBackOff|Error|ImagePullBackOff|CreateContainerConfigError|RunContainerError/ {print $1}')
+            for pod in $failing_pods; do
+              echo "--- Logs: $pod ---"
+              oc -n "$NAMESPACE" logs "$pod" --all-containers=true --tail=200 || true
+              echo "--- Describe: $pod ---"
+              oc -n "$NAMESPACE" describe pod "$pod" || true
+            done
+
+            echo "Deployment verification failed."
+            exit 1
+          fi
 
       - name: Get Route URL
         run: |
