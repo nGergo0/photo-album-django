@@ -42,18 +42,15 @@ jobs:
           sudo mv oc kubectl /usr/local/bin/
           oc version --client
 
-      - name: Verify OpenShift connection
-        run: |
-          oc whoami
-          oc project "$NAMESPACE"
-          oc -n "$NAMESPACE" get pods
-
-      - name: Detect project existence
+      - name: Verify OpenShift connection and detect project
         id: project_check
         run: |
+          oc whoami
           if oc get project "$NAMESPACE" >/dev/null 2>&1; then
             echo "create_project=false" >> "$GITHUB_OUTPUT"
             echo "Project exists: $NAMESPACE"
+            oc project "$NAMESPACE"
+            oc -n "$NAMESPACE" get pods
           else
             echo "create_project=true" >> "$GITHUB_OUTPUT"
             echo "Project missing, will be created by Terraform: $NAMESPACE"
