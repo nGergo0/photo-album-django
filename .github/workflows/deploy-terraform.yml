@@ -18,6 +18,7 @@ jobs:
       TF_VERSION: 1.6.0
       KUBECONFIG: ${{ github.workspace }}/.kube/config
       NAMESPACE: photo-album-pibk75
+      WEB_REPLICAS: 2
 
     steps:
       - name: Checkout repository
@@ -94,6 +95,7 @@ jobs:
             -var="db_password=${{ secrets.DB_PASSWORD }}" \
             -var="github_webhook_secret=${{ secrets.WEBHOOK_SECRET_GITHUB }}" \
             -var="generic_webhook_secret=${{ secrets.WEBHOOK_SECRET_GENERIC }}" \
+            -var="web_replicas=${WEB_REPLICAS}" \
             -out=tfplan
 
       - name: Terraform Apply

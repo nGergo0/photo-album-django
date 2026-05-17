@@ -10,6 +10,7 @@ locals {
     github_branch          = var.github_branch
     github_webhook_secret  = var.github_webhook_secret
     generic_webhook_secret = var.generic_webhook_secret
+    web_replicas           = var.web_replicas
   }
 }
 

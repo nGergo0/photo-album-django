@@ -8,7 +8,7 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: photo-album-django
-  minReplicas: 1
+  minReplicas: ${web_replicas}
   maxReplicas: 10
   metrics:
     - type: Resource

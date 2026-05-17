@@ -75,3 +75,9 @@ variable "enable_hpa" {
   type        = bool
   default     = true
 }
+
+variable "web_replicas" {
+  description = "Replica count for photo-album-django. When HPA is enabled, this sets deployment replicas and HPA minReplicas."
+  type        = number
+  default     = 1
+}
