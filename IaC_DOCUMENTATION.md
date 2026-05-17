@@ -17,7 +17,6 @@ Namespace: `photo-album-pibk75`.
 A Terraform muodul telepítését GitHub Actions végzi.
 Workflow: `.github/workflows/deploy-terraform.yml`
 
-**Trigger** (push `main`-re), ha változik: `terraform/`, `Dockerfile`, `webapp/`, a workflow fájl.
 
 **Kötelező repository secret-ek** (Settings → Secrets and variables → Actions):
 
